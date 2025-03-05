@@ -578,7 +578,7 @@ std::pair<bool, double> Proccessing::rusFilterComb(std::vector<std::forward_list
 // Вывод
 void Proccessing::print(std::string filename)
 {
-    std::ofstream jout("../data/json.json");
+    std::ofstream jout("data/json.json");
 
     std::ofstream fout;
     fout.open(filename);

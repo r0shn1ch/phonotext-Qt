@@ -1,4 +1,5 @@
 ﻿#include "proccessing.h"
+#include <climits>
 
 Proccessing::Proccessing(Phonotext pt, std::string lng, double min_pwr, double max_pwr)
 {
@@ -36,7 +37,8 @@ void Proccessing::proccess()
     std::cout << "repeat\n";
     repeatProccessor(); // Подсчёт
     std::cout << "proccessing end\n";
-    clock_t end = clock();
+    // clock_t end = clock();
+    // время нигде не используется
 }
 
 
@@ -177,6 +179,7 @@ void Proccessing::numberProccessor()
     int i = 0; // Для подсчёта номера буквы в тексте
     int j = 1; // Для подсчёта слога в тексте
     int k = 1; // Для подсчёта слова в тексте
+    int l = 1, fw_pos = 1; // Для подсчёта первой буквы в слове
     int num = 1; // Не используется, но в оригинале было
     bool space = false; // Несёт информацию, является ли данный итерируемый объект пробелом
     int space_pos = 0; // Для подсчёта нахождения объекта в слове после пробела
@@ -186,10 +189,11 @@ void Proccessing::numberProccessor()
     {
         it->number = i;
         it->word = k;
-
         if (it->technic == " " || it->technic == "|" || it->technic == "\n")
         {
             space_pos = 0;
+            k++;
+            l = 1;
             space = true;
         }
         else
@@ -229,7 +233,13 @@ void Proccessing::numberProccessor()
         it->syll = j;
         i++;
         num++;
-        it->w_pos = space_pos; // Возникала ощибка с этим, а именно, значения не сохранялись
+        l++;
+        if(l) {
+            it->fw_pos = i;
+            fw_pos = i;
+        }
+        else it->fw_pos = fw_pos;
+        it->w_pos = space_pos; // Возникала ошибка с этим, а именно, значения не сохранялись
     }
 }
 
@@ -335,6 +345,18 @@ bool isCorrectComb(std::forward_list<Letter>::iterator it1, std::forward_list<Le
         return false;
     if (it1->origin == ":" || it2->origin == ":" || it3->origin == ":")
         return false;
+
+    /* Замена всем проверкам ниже?
+    if ( (it1->origin[0] >= 97 and it1->origin[0] <= 122) or
+        (it2->origin[0] >= 97 and it2->origin[0] <= 122) or
+        (it3->origin[0] >= 97 and it3->origin[0] <= 122) )
+        return false;
+    или даже так:
+    if ( (it1->origin[0] >= 'a' and it1->origin[0] <= 'z') or
+        (it2->origin[0] >= 'a' and it2->origin[0] <= 'z') or
+        (it3->origin[0] >= 'a' and it3->origin[0] <= 'z') )
+        return false;
+    */
     if (it1->origin == "a" || it2->origin == "a" || it3->origin == "a")
 		return false;
 	if (it1->origin == "b" || it2->origin == "b" || it3->origin == "b")
@@ -478,7 +500,6 @@ void Proccessing::repeatProccessor()
                     tmpRepeat._words = tmpWords; // Уникальные символы структуры
                     tmpRepeat.count = 1; // Структура только создаётся, следовательно это только первая добавленная
                     tmpRepeat.power = filter.second; // Добавление силы первой добавленной комбинации
-
                     for (auto& i : comb) // Добавление уникальных объектов класса Letter из временного массива в структуру
                     {
                         bool flag = false;
@@ -500,7 +521,6 @@ void Proccessing::repeatProccessor()
                     it->second._words = tmpWords; // Уникальные символы структуры
                     it->second.count += 1; // Так как нашлась ещё одна комбинация, счётчик увеличивается
                     it->second.power = filter.second; // Добавление силы следующей добавленной комбинации
-
                     for (auto& i : comb) // Добавление уникальных объектов класса Letter из временного массива в структуру
                     {
                         bool flag = false;
@@ -519,6 +539,8 @@ void Proccessing::repeatProccessor()
         //auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
         //std::cout << "The time-=-: " << elapsed_ms.count() << " ms\n";
     }
+    std::cout<<"\nGlobal new power: ";
+    std::cout<<handlePower(pt.repeats)<<" "<<std::endl;
     pt.repeats.erase(pt.repeats.begin());
 }
 
@@ -572,7 +594,7 @@ std::pair<bool, double> Proccessing::rusFilterComb(std::vector<std::forward_list
     pwr += (!comb[0]->w_pos || !comb[1]->w_pos || !comb[2]->w_pos ? 1 : 0); // Проверка на то, является ли символы из комбинации первым в слове
     pwr /= 15;
 
-    return std::make_pair(min_pwr <= pwr <= max_pwr, pwr);
+    return std::make_pair( (min_pwr <= pwr) && (pwr <= max_pwr), pwr);
 }
 
 // Вывод
@@ -785,4 +807,84 @@ void Proccessing::createJson(std::string filename)
     fout.close();
 
 
+}
+double Proccessing::get_pwr (const std::forward_list<Letter>::iterator &a, const std::forward_list<Letter>::iterator &b)
+{
+    if (a->technic != b->technic) //если technic в letters разные, то power нулевая
+        return 0;
+    int dist = b->syll - a->syll; //разница между позициями слогов которые содержат данные символы (походу?)
+    if (dist < 1)
+        return 0;
+    double mul = 1; //множитель для расчета силы в зависимостиот расстояния
+    int dist_w = b->word - a->word; //расстояние между словами в которых находятся данные символы
+    double pwr = 1. / dist + 1. / (dist_w + 2);
+    if ( (a->origin == b->origin) && a->isConsonant) //если сами символы равны и а согласная
+        mul += 1; //то модификатор +1
+    mul *= 1. / (1 + a->fw_pos + b->fw_pos); //position.word_start - это что? как я понял позиция символа с которого начинается данное слово
+    return pwr * mul; //вовзрат павер для символов
+}
+double Proccessing::get_pwr_combs (const std::vector<std::forward_list<Letter>::iterator>& combA, const std::vector<std::forward_list<Letter>::iterator>& combB)
+{
+    double pwr = 0;
+    for (int i = 0; i < sizeof(combA)/sizeof(combA[0]); ++i)
+        for (int j = 0; j < sizeof(combB)/sizeof(combB[0]); ++j)
+            pwr += get_pwr(combA[i], combB[j]);
+            //обходим все символы каждой из комбинаций и считаем силу для них по формуле выше
+    double mul_1 = 1;
+    double mul_2 = 1;
+    for (int i = 0; i < sizeof(combA)/sizeof(combA[0]) - 1; ++i)
+        mul_1 *= combA[i + 1]->w_pos - combA[i]->w_pos;
+    //первый множитель это произведение разностей позиций в тексте каждого символа друг за другом
+    //в первой комбинации
+    for (int i = 0; i < sizeof(combB)/sizeof(combB[0]) - 1; ++i)
+        mul_2 *= combB[i + 1]->w_pos - combB[i]->w_pos;
+    //второй множитель это произведение разностей позиций в тексте каждого символа друг за другом
+    //во второй комбинации
+
+    double mul = 10 * rusFilterComb(combA, CONFIG.getWords()).second
+                 * rusFilterComb(combB, CONFIG.getWords()).second
+                 * (1 + combA[combA.size()-1]->pEnd + combB[combB.size()-1]->pEnd);
+    //position.last_word_in_line - похоже это позиция последнего слова в линии текста
+    //походу для учета связи последних слов в линии
+
+    //power у комбинаций - что это? формулы из плюсового кода?
+    //использовал rusFilterComb, чтобы не писать еще одну функцию для поиска силы комбинации
+    pwr *= 1. / (mul_1 + 1) + 1. / (mul_2 + 1);
+
+    return pwr * mul; //вовзрат павер для 2 комбинаций
+}
+double Proccessing::handlePower(std::map<std::string, Repeat>& repeats)
+{
+    //зачем оно - непонятно, но в исходном python-е было
+    for (auto& data : repeats) {
+        data.second.count = 1;
+         auto last = data.second.combs[0];
+        for (auto& y : data.second.combs){
+            if (y[0]->number - last[last.size()-1]->number > 0)
+                data.second.count += 1;
+            last = y; //но зачем?
+        }
+    }
+    //конец непонятного фрагмента
+
+    //общая сила повторов
+    double repeats_power = 0;
+    for (auto &rep : repeats){
+        double pwr = 0; //расчет
+        //ищем по каждому из всех повторений
+        //комбинации это вектор списков символов
+        //здесь длина комбинаций это их количество в повторении
+        for (int i = 0; i < sizeof(rep.second.combs)/sizeof(rep.second.combs[0]) - 1; ++i) {//обходим все комбинации, в комбинациях обходим все символы
+            for (int j = i; j < sizeof(rep.second.combs)/sizeof(rep.second.combs[0]); ++j) { //обходим все кобинации одного повторения каждая с каждой
+                pwr += get_pwr_combs(rep.second.combs[i], rep.second.combs[j]); //рассчет силы по формуле выше
+                if (rep.second.combs[j][0]->number - rep.second.combs[i][0]->number > 50)
+                    break;
+                //если разница в позициях у первых символов в комбинациях больше 50, то прервать
+            }
+        }
+        rep.second.power = pwr;
+        repeats_power += pwr;
+    }
+    return repeats_power;
+    //для нахождения силы повторения обходим все комбинации со всеми и считаем их совместную силу, и суммируем
 }

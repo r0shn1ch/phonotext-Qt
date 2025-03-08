@@ -5,14 +5,15 @@ Letter::Letter()
 	origin = "";
 	technic = "";
 	printable = "";
-	isConsonant = NULL;
-	isVolve = NULL;
-	syll = NULL;
-	pwr = NULL;
-	number = NULL;
-	word = NULL;
-	pEnd = NULL;
-	accent = NULL;
+    isConsonant = false;
+    isVolve = false;
+    syll = 0;
+    pwr = 0;
+    number = 0;
+    word = 0;
+    pEnd = 0;
+    fw_pos = 0;
+    accent = false;
 }
 
 Letter::Letter(std::string symbol)
@@ -27,6 +28,7 @@ Letter::Letter(std::string symbol)
 	number = 0;
 	word = 0;
 	pEnd = 0;
+    fw_pos = 0;
 	accent = false;
 }
 

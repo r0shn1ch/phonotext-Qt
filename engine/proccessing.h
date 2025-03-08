@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <chrono>
 #include <bitset>
+#include <list>
 
 #include <nlohmann/json.hpp>
 #include "conf.h"
@@ -47,6 +48,9 @@ private:
 	void repeatProccessor();
 	std::pair<bool, double> rusFilterComb(std::vector<std::forward_list<Letter>::iterator> comb, std::vector<std::string> words);
 
+    double get_pwr (const std::forward_list<Letter>::iterator &a, const std::forward_list<Letter>::iterator& b);
+    double get_pwr_combs (const std::vector<std::forward_list<Letter>::iterator>& combA, const std::vector<std::forward_list<Letter>::iterator>& combsB);
+    double handlePower(std::map<std::string, Repeat>& repeats);
 	std::chrono::milliseconds ttttt;
 };
 

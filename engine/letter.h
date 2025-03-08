@@ -17,10 +17,11 @@ public:
 	bool isConsonant;
 	bool isVolve;
 	int syll; // В каком слоге находится
-	int pwr; 
+    int pwr;
+    int fw_pos;
 	int number; // Номер по порядку в тексте
 	int word; // Номер слова
-	int pEnd; // Последняя буква в строке
+    int pEnd; // Последняя буква в строке
 	bool accent;
 
 	int w_pos; //номер буквы в слове

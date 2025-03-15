@@ -14,7 +14,11 @@ int main()
 
     std::ifstream fin;
     fin.open("data/in1.txt", std::ios_base::in);
-    if (!fin.is_open()){return 0;};
+    if (!fin.is_open()){
+        std::cout << "File cannot be opened" << std::endl;
+        return 0;
+    };
+
     std::cout << "start\n";
 
     std::string data;

@@ -10,7 +10,7 @@
 #include <bitset>
 #include <list>
 
-#include <nlohmann/json.hpp>
+#include "include/json.hpp"
 #include "conf.h"
 #include "letter.h"
 #include "phonotext.h"

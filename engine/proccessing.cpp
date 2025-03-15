@@ -178,22 +178,23 @@ void Proccessing::numberProccessor()
 {
     int i = 0; // Для подсчёта номера буквы в тексте
     int j = 1; // Для подсчёта слога в тексте
-    int k = 1; // Для подсчёта слова в тексте
-    int l = 1, fw_pos = 1; // Для подсчёта первой буквы в слове
-    int num = 1; // Не используется, но в оригинале было
+    int k = 0; // Для подсчёта слова в тексте
+    int l = 0; // Для подсчёта первой буквы в слове
+    int num = 1;
+    int word_len = 0;
     bool space = false; // Несёт информацию, является ли данный итерируемый объект пробелом
     int space_pos = 0; // Для подсчёта нахождения объекта в слове после пробела
-
-    int l_number = 0; // Не используется, но в оригинале было
+    std::forward_list<Letter>::iterator beginWord = pt.basetext.begin();
+    std::forward_list<Letter>::iterator lastWord = beginWord;
+    int l_number = 0; // номер символа в тексте - 1
     for (auto it = pt.basetext.begin(); it != pt.basetext.end(); it++, l_number++)
     {
         it->number = i;
-        it->word = k;
-        if (it->technic == " " || it->technic == "|" || it->technic == "\n")
+        if (it->origin == " " || it->technic == "|" || it->technic == "\n")
         {
             space_pos = 0;
             k++;
-            l = 1;
+            l = 0;
             space = true;
         }
         else
@@ -210,8 +211,24 @@ void Proccessing::numberProccessor()
         }
         if (it->technic == "\n")
         {
-            // обработка
-            // P.S. хз почему я не рерайтнул обработку для этого, мб какая то проблема
+            int stopper = 0;
+            if (j > 3) stopper = j - 3;
+            lastWord = beginWord;
+            while (beginWord != it)
+            {
+                beginWord->pEnd = 1;
+                // debug output
+                // std::cout << lastword->number << " ";
+                ++beginWord;
+            }
+            /*while (lastword->syll > stopper and lastword != it)
+            {
+                lastword->pEnd = 1;
+                std::cout << lastword->number << " ";
+                ++lastword;
+            }*/
+            // не до конца понял за что стоппер отвечает, но он не проставляет
+            // конец строки на каждой строке в последнем слове
         }
         // Определение гласных объектов
         std::vector<std::string> volves = CONFIG.getVolves();
@@ -230,16 +247,38 @@ void Proccessing::numberProccessor()
                 it->isConsonant = true;
                 break;
             }
+        if(it->isConsonant || it->isVolve) {
+            it->word = k;
+            word_len++;
+        }
+        else it->word = k - 1;
         it->syll = j;
         i++;
         num++;
-        l++;
-        if(l) {
-            it->fw_pos = i;
-            fw_pos = i;
+        if (l == 1)
+        {
+            beginWord = it;
         }
-        else it->fw_pos = fw_pos;
+        it->fw_pos = l;
+        if (it->origin == " " || it->origin == "\n")
+        {
+            auto tmpIt = beginWord;
+            if (word_len <= 2)
+            {
+                while (tmpIt != it)
+                {
+                    // debug output
+                    // std::cout << tmpIt->origin;
+                    tmpIt->fw_pos = 0;
+                    ++tmpIt;
+                }
+                std::cout<<std::endl;
+            }
+            word_len = 0;
+        }
+        l++;
         it->w_pos = space_pos; // Возникала ошибка с этим, а именно, значения не сохранялись
+
     }
 }
 
@@ -351,17 +390,12 @@ bool isCorrectComb(std::forward_list<Letter>::iterator it1, std::forward_list<Le
     if (it1->origin == ":" || it2->origin == ":" || it3->origin == ":")
         return false;
 
-    /* Замена всем проверкам ниже?
-    if ( (it1->origin[0] >= 97 and it1->origin[0] <= 122) or
-        (it2->origin[0] >= 97 and it2->origin[0] <= 122) or
-        (it3->origin[0] >= 97 and it3->origin[0] <= 122) )
-        return false;
-    или даже так:
+    // Замена проверкам ниже
     if ( (it1->origin[0] >= 'a' and it1->origin[0] <= 'z') or
         (it2->origin[0] >= 'a' and it2->origin[0] <= 'z') or
         (it3->origin[0] >= 'a' and it3->origin[0] <= 'z') )
         return false;
-    */
+    /*
     if (it1->origin == "a" || it2->origin == "a" || it3->origin == "a")
 		return false;
 	if (it1->origin == "b" || it2->origin == "b" || it3->origin == "b")
@@ -414,7 +448,7 @@ bool isCorrectComb(std::forward_list<Letter>::iterator it1, std::forward_list<Le
 			return false;
 	if (it1->origin == "z" || it2->origin == "z" || it3->origin == "z")
 			return false;
-
+    */
     return true;
 }
 
@@ -608,8 +642,6 @@ std::pair<bool, double> Proccessing::rusFilterComb(std::vector<std::forward_list
 // Вывод
 void Proccessing::print(std::string filename)
 {
-    std::ofstream jout("data/json.json");
-
     std::ofstream fout;
     fout.open(filename);
     fout << "===========\n";
@@ -695,9 +727,6 @@ void Proccessing::print(std::string filename)
     std::string printable = "";
     for (auto it = pt.basetext.begin(); it != pt.basetext.end(); it++)
         printable += it->printable;
-
-    nlohmann::json j = {"printable", printable};
-
     fout << "-----------\n";
     fout << "repeats:\n";
     for (auto& i : pt.repeats)
@@ -732,89 +761,91 @@ void Proccessing::print(std::string filename)
             fout << " ";
         }
         fout << std::endl << std::endl;
-
-        j.push_back({i.first,
-        {
-            {"Repeat.power", i.second.power},
-            {"Repeat.count", i.second.count},
-            {"Repeat.letters", letters},
-            {"Repeat.words", vwords},
-            {"Repeat.combs", combs},
-        }});
     }
     fout << std::endl;
     fout << "-----------\n";
     fout.close();
-    jout << j;
-    jout.close();
 }
 
 void Proccessing::createJson(std::string filename)
 {
-    std::string printable = "";
-    for (auto it = pt.basetext.begin(); it != pt.basetext.end(); it++)
-        printable += it->printable;
+    nlohmann::json outJson;
+    int counter = 0;
+    for (auto& j : pt.basetext)
+    {
 
-
-    std::string str = "{\n";
+        nlohmann::json tmpOutTextJson = {
+                {"origin", j.origin},
+                {"technic", j.technic},
+                {"printable", j.printable},
+                {"is_consonant", j.isConsonant},
+                {"is_accent", j.accent},
+                {"is_volve", j.isVolve},
+                {"word", j.word},
+                {"positions:", {
+                    {"text", j.number},
+                    {"syllab", j.syll},
+                    {"word_start", j.fw_pos},
+                    {"word_end", 0},
+                    {"last_word_in_line", j.pEnd}
+                }}
+        };
+        // word_end is incorrect
+        outJson["text"][counter] = tmpOutTextJson;
+        ++counter;
+    }
+    counter = 0;
     for (auto& i : pt.repeats)
     {
         std::string key = "";
         std::string power = "";
         std::string count = "";
-        std::string letters = ""; // удалить повторяющиеся
+        std::vector<int>letters_array; // удалить повторяющиеся
         std::string words = "";
-        std::vector<std::string> combs;
-
+        std::vector<std::string>combs;
+        std::vector<std::vector<int>>indCombs;
         key = i.first;
         power = std::to_string(i.second.power);
         count = std::to_string(i.second.count);
         for (int j = 0; j < i.second.letters.size(); j++)
-            letters += i.second.letters[j].origin;
+            letters_array.push_back(i.second.letters[j].number);
         for (auto& j : i.second._words)
             words += j;
+        //indCombs = i.second.combs;
         for (int j = 0; j < i.second.combs.size(); j++)
         {
             std::string tCombs = "";
-            for (int k = 0; k < i.second.combs[j].size(); k++)
+            std::vector<int>tmpArr;
+            for (int k = 0; k < i.second.combs[j].size(); k++){
                 tCombs += i.second.combs[j][k]->origin;
+                tmpArr.push_back(i.second.combs[j][k]->number);
+            }
+            indCombs.push_back(tmpArr);
+            tmpArr.clear();
             combs.push_back(tCombs);
         }
 
-        nlohmann::json tmpOutJson = {
-            {"printable", printable},
-            {"repeat", {
+        nlohmann::json tmpOutRepeatJson = {
                 {"key", key},
-                {"power", power},
                 {"count", count},
-                {"letters", letters},
-                {"words", words}
-            }}
+                {"power", power},
+                {"letters", letters_array},
+                {"combs", combs},
+                {"indCombs", indCombs}
         };
 
-        str += "\t\"" + key + "\": {\n";
-        str += "\t\t\"key\": \"" + key + "\",\n";
-        str += "\t\t\"power\": \"" + power + "\",\n";
-        str += "\t\t\"count\": \"" + count + "\",\n";
-        str += "\t\t\"letters\": \"" + letters + "\",\n";
-        str += "\t\t\"words\": \"" + words + "\",\n";
-        str += "\t\t\"combs\": [";
-        for (int j = 0; j < combs.size(); j++)
-        {
-            str += "\"" + combs[j] + "\"" + (j + 1 < combs.size() ? ", " : "");
-        }
-        str += "]\n";
-        str += "\t},\n";
-        outJson.push_back(tmpOutJson);
+        outJson["repeats:"][counter] = tmpOutRepeatJson;
+        ++counter;
     }
-    str += "}\n";
 
     std::ofstream fout;
     fout.open(filename);
-    fout << str;
+    if (!fout.is_open()){
+        std::cout << "File cannot be opened!" << std::endl;
+        return;
+    };
+    fout << std::setw(4) << outJson;
     fout.close();
-
-
 }
 double Proccessing::get_pwr (const std::forward_list<Letter>::iterator &a, const std::forward_list<Letter>::iterator &b)
 {
@@ -824,29 +855,40 @@ double Proccessing::get_pwr (const std::forward_list<Letter>::iterator &a, const
     if (dist < 1){
         return 0;
     }
+    // debug output
+    // std::cout << a->origin << " " << b->origin;
     double mul = 1; //множитель для расчета силы в зависимости от расстояния
     int dist_w = b->word - a->word; //расстояние между словами в которых находятся данные символы
     double pwr = 1. / dist + 1. / (dist_w + 2);
+    // debug output
+    // std::cout << pwr << " ";
     if ( (a->origin == b->origin) && a->isConsonant) //если сами символы равны и а согласная
         mul += 1; //то модификатор +1
+    // debug output
+    // std::cout << mul << " ";
     mul *= 1. / (1 + a->fw_pos + b->fw_pos); //position.word_start - это что? как я понял позиция символа с которого начинается данное слово
+    // debug output
+    // std::cout << mul << " " << a->fw_pos << " " << b->fw_pos << "\n";
     return pwr * mul; //вовзрат павер для символов
 }
 double Proccessing::get_pwr_combs (const std::vector<std::forward_list<Letter>::iterator>& combA, const std::vector<std::forward_list<Letter>::iterator>& combB)
 {
     double pwr = 0;
-    std::cout<<"\ncomb A: \n";
-    for (auto &i: combA){
-        std::cout<<i->origin;
-    }
-    std::cout<<"\ncomb B: \n";
+    /*  debug output
+        std::cout<<"\ncomb A: \n";
+        for (auto &i: combA){
+            std::cout<<i->origin;
+        }
+        std::cout<<"\ncomb B: \n";
         for (auto &j: combB){
             std::cout<<j->origin;
         }
+    */
     for (int i = 0; i < combA.size(); ++i){
         for (int j = 0; j < combB.size(); ++j){
             pwr += get_pwr(combA[i], combB[j]);
-            std::cout << get_pwr(combA[i], combB[j]) << " ";
+            // debug output
+            // std::cout << get_pwr(combA[i], combB[j]) << " ";
         }
     }      //обходим все символы каждой из комбинаций и считаем силу для них по формуле выше
     double mul_1 = 1;
@@ -871,7 +913,8 @@ double Proccessing::get_pwr_combs (const std::vector<std::forward_list<Letter>::
     //использовал rusFilterComb, чтобы не писать еще одну функцию для поиска силы комбинации
     pwr *= 1. / (mul_1 + 1) + 1. / (mul_2 + 1);
 
-    std::cout << "\npwr " << pwr << " mul " << mul << " mul_1 " << mul_1 << " mul_2 " << mul_2 << " ";
+    // debug output
+    // std::cout << "\npwr " << pwr << " mul " << mul << " mul_1 " << mul_1 << " mul_2 " << mul_2 << " ";
 
     return pwr * mul; //вовзрат павер для 2 комбинаций
 }
@@ -900,16 +943,6 @@ double Proccessing::handlePower(std::map<std::string, Repeat>& repeats)
         //ищем по каждому из всех повторений
         //комбинации это вектор списков символов
         //здесь длина комбинаций это их количество в повторении
-        /*int cnt_comb = 0;
-        ++cnt_rep;
-        std::cout << "\nrep: " << cnt_rep << std::endl;
-        for(int i = 0; i < rep.second.combs.size(); ++i){
-            ++cnt_comb;
-            std::cout << " comb: " << cnt_comb <<" ";
-            for(int l = 0; l < rep.second.combs[i].size(); ++l)
-                std::cout << rep.second.combs[i][l]->origin << " " << rep.second.combs[i][l]->number;
-            std::cout << "\n";
-        }*/
         //обходим все комбинации, в комбинациях обходим все символы
         //обходим все кобинации одного повторения каждая с каждой
         for (int i = 0; i < rep.second.combs.size(); ++i) {
@@ -923,8 +956,9 @@ double Proccessing::handlePower(std::map<std::string, Repeat>& repeats)
                 //если разница в позициях у первых символов в комбинациях больше 50, то прервать
             }
         }
-        std::cout << "\n::" << rep.first << " " << pwr << "\n";
-        //rep.second.power = pwr;
+        // debug output
+        // std::cout << "\n::" << rep.first << " " << pwr << "\n";
+        rep.second.power = pwr;
         repeats_power += pwr;
     }
 

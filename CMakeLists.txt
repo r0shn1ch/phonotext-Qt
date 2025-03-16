@@ -8,6 +8,6 @@ endif()
 
 project(phonotry)
 
-add_executable(app phonotry.cpp engine/conf.cpp engine/letter.cpp  engine/phonotext.cpp engine/proccessing.cpp
-engine/conf.h engine/letter.h  engine/phonotext.h engine/proccessing.h
+add_executable(app src/phonotry.cpp src/conf.cpp src/letter.cpp  src/phonotext.cpp src/proccessing.cpp
+src/conf.h src/letter.h  src/phonotext.h src/proccessing.h
 )

@@ -68,17 +68,3 @@ CTestTestfile.cmake
 _deps
 app
 *.exe
-.qtc_clangd/.cache/clangd/index/
-.cmake/api/v1/query/
-.cmake/api/v1/reply/
-.qtc/package-manager/
-qtcsettings.cmake
-.ninja_log
-.ninja_deps
-build.ninja
-.cmake/api/v1/reply.prev/
-Release/.cmake/api/v1/query/
-Release/.cmake/api/v1/reply/
-Release/.qtc/package-manager/
-Release/.qtc_clangd/.cache/clangd/index/
-CMakeCache.txt.prev

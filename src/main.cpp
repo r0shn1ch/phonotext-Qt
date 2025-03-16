@@ -1,12 +1,14 @@
+#include "qtmainwindow.h"
+#include <QApplication>
 #include <fstream>
 #include <chrono>
 
 #include "phonotext.h"
 #include "proccessing.h"
 
-int main()
+int main(int argc, char *argv[])
 {
-	auto begin = std::chrono::steady_clock::now();
+    auto begin = std::chrono::steady_clock::now();
 
 #ifdef _WIN32
     system("chcp 65001");
@@ -29,7 +31,7 @@ int main()
         std::getline(fin, line);
         data += line + '\n';
     }
-    
+
     fin.close();
     std::cout << "Read End";
     Phonotext pt(data);
@@ -41,5 +43,10 @@ int main()
     auto end = std::chrono::steady_clock::now();
     auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
     std::cout << "The time: " << elapsed_ms.count() << " ms\n";
-    return 0;
+
+    //frontend
+    QApplication a(argc, argv);
+    QtMainWindow w;
+    w.show();
+    return a.exec();
 }

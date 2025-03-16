@@ -272,7 +272,7 @@ void Proccessing::numberProccessor()
                     tmpIt->fw_pos = 0;
                     ++tmpIt;
                 }
-                std::cout<<std::endl;
+                //std::cout<<std::endl;
             }
             word_len = 0;
         }

@@ -163,10 +163,35 @@ void Proccessing::joinProccessor()
                         break;
                     }
                     // Если это не последний элемент, то перескок на следующий итератор, во избежание ошибки и удаление настоящего символа
-                    it++;
+                    it = itPreviosLetter;
                     pt.basetext.erase_after(itPreviosLetter);
                 }
             }
+            if (tmp_b == "\u0301"){
+                // ударение
+                itPreviosLetter->printable = itPreviosLetter->printable + tmp_b;
+                itPreviosLetter->accent = true;
+                it = itPreviosLetter;
+                pt.basetext.erase_after(itPreviosLetter);
+            }
+            if (tmp_b == "\u0484"){
+                // удаление символа мягкости
+                it = itPreviosLetter;
+                // itPreviosLetter ->printable = itPreviosLetter->printable + tmp_b;
+                pt.basetext.erase_after(itPreviosLetter);
+            }
+            // if (tmp_a.c_str()[1] == 0 && tmp_b.c_str()[1] == 0){
+            //     if (it->origin == "\n"){
+            //         itPreviosLetter->origin = "\n";
+            //     }
+            //     else {
+            //         itPreviosLetter->origin = " ";
+            //     }
+
+            //     itPreviosLetter->printable = itPreviosLetter->printable + tmp_b;
+            //     it = itPreviosLetter;
+            //     pt.basetext.erase_after(itPreviosLetter);
+            // }
             itPreviosLetter = it; // Смена прошлого итератора на настоящий
         }
         it++; // Следующий итератор

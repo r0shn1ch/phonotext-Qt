@@ -163,10 +163,35 @@ void Proccessing::joinProccessor()
                         break;
                     }
                     // Если это не последний элемент, то перескок на следующий итератор, во избежание ошибки и удаление настоящего символа
-                    it++;
+                    it = itPreviosLetter;
                     pt.basetext.erase_after(itPreviosLetter);
                 }
             }
+            if (tmp_b == "\u0301"){
+                // ударение
+                itPreviosLetter->printable = itPreviosLetter->printable + tmp_b;
+                itPreviosLetter->accent = true;
+                it = itPreviosLetter;
+                pt.basetext.erase_after(itPreviosLetter);
+            }
+            if (tmp_b == "\u0484"){
+                // удаление символа мягкости
+                it = itPreviosLetter;
+                // itPreviosLetter ->printable = itPreviosLetter->printable + tmp_b;
+                pt.basetext.erase_after(itPreviosLetter);
+            }
+            // if (tmp_a.c_str()[1] == 0 && tmp_b.c_str()[1] == 0){
+            //     if (it->origin == "\n"){
+            //         itPreviosLetter->origin = "\n";
+            //     }
+            //     else {
+            //         itPreviosLetter->origin = " ";
+            //     }
+
+            //     itPreviosLetter->printable = itPreviosLetter->printable + tmp_b;
+            //     it = itPreviosLetter;
+            //     pt.basetext.erase_after(itPreviosLetter);
+            // }
             itPreviosLetter = it; // Смена прошлого итератора на настоящий
         }
         it++; // Следующий итератор
@@ -769,6 +794,11 @@ void Proccessing::print(std::string filename)
 
 void Proccessing::createJson(std::string filename)
 {
+    std::ofstream fpres;
+    fpres.open("res/data/prnst.txt");
+
+    fpres << " key power count count/pt.repeats_count power/pt.repeats_power\n";
+
     nlohmann::json outJson;
     int counter = 0;
     for (auto& j : pt.basetext)
@@ -836,6 +866,9 @@ void Proccessing::createJson(std::string filename)
 
         outJson["repeats:"][counter] = tmpOutRepeatJson;
         ++counter;
+
+        fpres << key << " " << count << " " << power << " " <<
+            (double)i.second.count/pt.repeats_count << " " << (double)i.second.power/pt.repeats_power << "\n";
     }
 
     std::ofstream fout;
@@ -940,6 +973,7 @@ double Proccessing::handlePower(std::map<std::string, Repeat>& repeats)
     double repeats_power = 0;
     for (auto &rep : repeats){
         double pwr = 0; //расчет
+        cnt_rep += rep.second.count;
         //ищем по каждому из всех повторений
         //комбинации это вектор списков символов
         //здесь длина комбинаций это их количество в повторении
@@ -961,7 +995,8 @@ double Proccessing::handlePower(std::map<std::string, Repeat>& repeats)
         rep.second.power = pwr;
         repeats_power += pwr;
     }
-
+    pt.repeats_power = repeats_power;
+    pt.repeats_count = cnt_rep;
     return repeats_power;
     //для нахождения силы повторения обходим все комбинации со всеми и считаем их совместную силу, и суммируем
 }

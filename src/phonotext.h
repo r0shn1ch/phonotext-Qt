@@ -32,6 +32,9 @@ public:
 	std::map<std::string, Repeat> repeats;
 
 
+    double repeats_power = 0;
+    int repeats_count = 0;
+
 	std::pair<int, int> countLetters();
 	std::string getOrigin();
 	std::string getTechnic();

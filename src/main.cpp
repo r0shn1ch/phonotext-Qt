@@ -44,9 +44,10 @@ int main(int argc, char *argv[])
     auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
     std::cout << "The time: " << elapsed_ms.count() << " ms\n";
 
-    //frontend
-    QApplication a(argc, argv);
-    QtMainWindow w;
-    w.show();
-    return a.exec();
+    // frontend
+    //QApplication a(argc, argv);
+    //QtMainWindow w;
+    //w.show();
+    //return a.exec();
+    return 0;
 }

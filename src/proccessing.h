@@ -10,6 +10,9 @@
 #include <bitset>
 #include <list>
 
+#include <QDebug>
+#include <QElapsedTimer>
+
 #include "../include/nlohmann/json/json.hpp"
 #include "conf.h"
 #include "letter.h"
@@ -32,7 +35,7 @@ private:
 	double min_pwr = 0;
 	double max_pwr = 0;
 	std::vector<nlohmann::json> outJson;
-	
+    QElapsedTimer timer;
 	std::vector<std::forward_list<Letter>::iterator> volveIterators;
 
 	void proccess();
@@ -46,10 +49,10 @@ private:
 	std::pair<int, std::vector<int>> findLocalWordsInds(std::pair<std::forward_list<Letter>::iterator, std::forward_list<Letter>::iterator> localSP);
 	void combinationsProccessor(int N = 2);
 	void repeatProccessor();
-	std::pair<bool, double> rusFilterComb(std::vector<std::forward_list<Letter>::iterator> comb, std::vector<std::string> words);
+    std::pair<bool, double> rusFilterComb(const QVector<std::forward_list<Letter>::iterator>& comb, const QVector<QString>& words);
 
     double get_pwr (const std::forward_list<Letter>::iterator &a, const std::forward_list<Letter>::iterator& b);
-    double get_pwr_combs (const std::vector<std::forward_list<Letter>::iterator>& combA, const std::vector<std::forward_list<Letter>::iterator>& combsB);
+    double get_pwr_combs (const QVector<std::forward_list<Letter>::iterator>& combA, const QVector<std::forward_list<Letter>::iterator>& combsB);
     double handlePower(std::map<std::string, Repeat>& repeats);
 	std::chrono::milliseconds ttttt;
 };

@@ -16,7 +16,7 @@ Phonotext::Phonotext(std::string text)
 	for (int i = 0, l = 0; i < text.size(); i+=l)
 	{
 		for(l = 0; text[i] & (0x80 >> l); ++l); l = (l)?l:1; // find next letter
-		basetext.emplace_after(iter, Letter(text.substr(i, l)));
+        basetext.emplace_after(iter, Letter(QString::fromStdString(text.substr(i, l))));
 		++iter;
 	}
 }
@@ -48,7 +48,7 @@ std::string Phonotext::getOrigin()
 	std::string originText = "";
 
 	for (auto& symb : basetext)
-		originText += symb.origin;
+        originText += symb.origin.toStdString();
 
 	return originText;
 }
@@ -58,7 +58,7 @@ std::string Phonotext::getTechnic()
 	std::string technicText = "";
 
 	for (auto& symb : basetext)
-		technicText += symb.technic;
+        technicText += symb.technic.toStdString();
 
 	return technicText;
 }
@@ -68,7 +68,7 @@ std::string Phonotext::getPrintable()
 	std::string printableText = "";
 
 	for (auto& symb : basetext)
-		printableText += symb.printable;
+        printableText += symb.printable.toStdString();
 
 	return printableText;
 }
@@ -78,7 +78,7 @@ std::string Phonotext::getPhonotextRepr()
 	std::string reprText = "";
 
 	for (auto& symb : basetext)
-		reprText += symb.getLetterRepr();
+        reprText += symb.getLetterRepr().toStdString();
 
 	return reprText;
 }

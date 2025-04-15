@@ -1,34 +1,31 @@
 #pragma once
 
-#include <string>
+#include <QString>
 
 class Letter
 {
-public:	
-	Letter();
-	Letter(std::string symbol);
-	~Letter();
+public:
+    Letter();
+    Letter(const QString& symbol);
 
-	// char to string
-	// Какие именно данные будут храниться в переменных
-	std::string origin;
-	std::string technic;
-	std::string printable;
-	bool isConsonant;
-	bool isVolve;
-	int syll; // В каком слоге находится
+    ~Letter();
+
+    QString origin;
+    QString technic;
+    QString printable;
+    bool isConsonant;
+    bool isVolve;
+    int syll;
     int pwr;
     int fw_pos;
-	int number; // Номер по порядку в тексте
-	int word; // Номер слова
-    int pEnd; // Последняя буква в строке
-	bool accent;
+    int number;
+    int word;
+    int pEnd;
+    bool accent;
+    int w_pos;
 
-	int w_pos; //номер буквы в слове
+    QString getLetter();
+    QString getLetterRepr() const; // Добавлен const
 
-	std::string getLetter();
-	std::string getLetterRepr();
-
-	bool operator ==(const Letter& letter) const;
+    bool operator ==(const Letter& letter) const;
 };
-

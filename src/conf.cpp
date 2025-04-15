@@ -1,127 +1,153 @@
 #include "conf.h"
+#include <QFile>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
+#include <QDebug>
 
-Conf::Conf()
-{
-}
+Conf::Conf() {}
 
-Conf::Conf(std::string lng)
+Conf::Conf(const QString& lng)
 {
-    if (lng == "rus")
+    if (lng == "rus"){
         makeConfig("res/lng_conf/russian.json");
+    }
     else if (lng == "eng")
         makeConfig("res/lng_conf/english.json");
     else if (lng == "lat")
         makeConfig("res/lng_conf/latin.json");
 }
 
-Conf::~Conf()
+Conf::~Conf() {}
+
+void Conf::makeConfig(const QString& lngPath)
 {
-}
+    QFile file(lngPath);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qDebug() << "Could not open config file: " << lngPath;
+        return;
+    }
 
-void Conf::makeConfig(std::string lngPath)
-{
-    std::ifstream fin(lngPath); // Подгрзка файла json
-    nlohmann::json data = nlohmann::json::parse(fin); // Выделение json файла
+    QByteArray jsonData = file.readAll();
+    file.close();
 
-    makeAlphabetConfig(data["alphabet"]); // Преобразования алфавита из строкового типа в массив букв
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+    if (doc.isNull()) {
+        qDebug() << "JSON document is invalid: " << lngPath;
+        return;
+    }
 
-    consonants = data["consonants"]; // Выборка символов из consonants
+    QJsonObject data = doc.object();
 
-    volves = data["volves"]; // Выборка символов из volves
+    makeAlphabetConfig(data["alphabet"].toString());
 
-    // Соединение consonants и volves в один массив
-    for (auto& i : consonants)
-        words.push_back(i);
-    for (auto& i : volves)
-        words.push_back(i);
+    QJsonArray consonantsArray = data["consonants"].toArray();
+    for (int i = 0; i < consonantsArray.size(); ++i)
+        consonants.append(consonantsArray[i].toString());
 
-    // Создание словаря: Буква с которой начинается комбинация букв - Сочетание символов (букв)
-    std::vector<std::string> jAsOne;
-    for (auto& i : data["as_one"])
-        jAsOne.push_back(i);
+    QJsonArray volvesArray = data["volves"].toArray();
+    for (int i = 0; i < volvesArray.size(); ++i)
+        volves.append(volvesArray[i].toString());
+
+    words = consonants;
+    words.append(volves);
+
+    QJsonArray asOneArray = data["as_one"].toArray();
+    QVector<QString> jAsOne;
+    for (int i = 0; i < asOneArray.size(); ++i)
+        jAsOne.append(asOneArray[i].toString());
     makeAsOneConfig(jAsOne);
 
-    makeAsSameConfig(data["as_same"], data["alphabet"]); // Создание словаря: Уникальный символ - Как символ слышится ( {'a':'a', 'p':'b', 'ph':'f'} )
+    QJsonArray asSameArrays = data["as_same"].toArray();
+    QVector<QVector<QString>> jAsSame;
+    for (int i = 0; i < asSameArrays.size(); ++i) {
+        QJsonArray innerArray = asSameArrays[i].toArray();
+        QVector<QString> innerVector;
+        for (int j = 0; j < innerArray.size(); ++j)
+            innerVector.append(innerArray[j].toString());
+        jAsSame.append(innerVector);
+    }
+    makeAsSameConfig(jAsSame, data["alphabet"].toString());
 
-    // Создания словаря: (Первая буква - (вторая буква - значение))
-    std::map<std::string, std::string> jDictionary;
-    for (nlohmann::json::iterator it = data["modifications"].begin(); it != data["modifications"].end(); it++)
-        jDictionary.emplace(it.key(), it.value());
+    QJsonObject modificationsObject = data["modifications"].toObject();
+    QMap<QString, QString> jDictionary;
+    for (QString key : modificationsObject.keys())
+        jDictionary.insert(key, modificationsObject[key].toString());
     makeModificationsConfig(jDictionary);
 }
 
-void Conf::makeAlphabetConfig(std::string jAlphabet)
+void Conf::makeAlphabetConfig(const QString& jAlphabet)
 {
-    for (auto& i : jAlphabet)
-        alphabet.push_back(i);
+    for (QChar i : jAlphabet)
+        alphabet.append(i);
 }
 
-void Conf::makeAsOneConfig(std::vector<std::string> jAsOne)
+void Conf::makeAsOneConfig(const QVector<QString>& jAsOne)
 {
-    for (auto& i : jAsOne)
+    for (const QString& i : jAsOne)
     {
-        auto it = asOne.find((char)i[0]);
-        if (it == asOne.end())
-            asOne.emplace((char)i[0], i);
+        if (asOne.find(i[0]) == asOne.end())
+            asOne.insert(i[0], i);
         else
-            it->second = i;
+            asOne[i[0]] = i;
     }
-        
 }
 
-void Conf::makeAsSameConfig(std::vector<std::vector<std::string>> jAsSame, std::string jAlphabet)
+void Conf::makeAsSameConfig(const QVector<QVector<QString>>& jAsSame, const QString& jAlphabet)
 {
-    for (int i = 0; i < jAlphabet.size(); i++) // Добавление всех букв алфавита в словарь: Буква - Буква
+    for (int i = 0; i < jAlphabet.size(); i++)
     {
-        std::string tempStr(1, jAlphabet[i]);
-        asSame.emplace(tempStr, tempStr);
+        QString tempStr(jAlphabet[i]);
+        asSame.insert(tempStr, tempStr);
     }
-    for (int i = 0; i < jAsSame.size(); i++) // Добавление недостающих символов и сочетаний букв, замена значений словаря на "как слышится"
+    for (const auto& i : jAsSame)
     {
-        for (auto& j : jAsSame[i])
+        for (const auto& j : i)
         {
-            // Добавление уникальных сиволов и сочетаний букв
             if (asSame.find(j) == asSame.end())
-                asSame.emplace(j, j);
+                asSame.insert(j, j);
 
-            // Поиск и замена значений словаря на "как слышится"
-            std::map<std::string, std::string> ::iterator it = asSame.find(j);
-            it->second = jAsSame[i][0];
+            asSame[j] = i[0];
         }
     }
 }
 
-void Conf::makeModificationsConfig(std::map<std::string, std::string> jDictionary)
+void Conf::makeModificationsConfig(const QMap<QString, QString>& jDictionary)
 {
-    int l;
-    for (auto& i : jDictionary)
+    for (const QString& key : jDictionary.keys())
     {
-        for(l = 0; i.first[0] & (0x80 >> l); ++l); l = (l)?l:1; 
-        // i.first.substr(0,l) -> first letter; i.first.substr(l) -> second letter
+        QString value = jDictionary[key];
 
-        if (modifications.find(i.first.substr(0, l)) == modifications.end()) // Добавление в словарь, если первая буква отсутствует
-        {
-            std::map<std::string, std::string> tmp;
-            tmp.emplace(i.first.substr(l), i.second);
-            modifications.emplace(i.first.substr(0, l), tmp);
+        int firstCharLen = 1;
+        if (!key.isEmpty()) {
+            firstCharLen = key.at(0).unicode() > 127 ? (key.at(0).unicode() > 2047 ? (key.at(0).unicode() > 65535 ? 4 : 3) : 2) : 1;
         }
-        else // Добавление в подсловарь, если первая буква присутствует
-        {
-            std::map<std::string, std::map<std::string, std::string>> ::iterator it = modifications.find(i.first.substr(0, l));
-            it->second.emplace(i.first.substr(l), i.second);
+        QString first = key.left(firstCharLen);
+        QString second = key.mid(firstCharLen);
+
+        if (modifications.contains(first)) {
+            modifications[first].insert(second, value);
+        }
+        else {
+            QMap<QString, QString> innerMap;
+            innerMap.insert(second, value);
+            modifications.insert(first, innerMap);
         }
     }
 }
 
-Conf Conf::operator=(Conf& CONFIG)
-{
-    this->modifications = CONFIG.modifications;
-    this->asOne = CONFIG.asOne;
-    this->consonants = CONFIG.consonants;
-    this->volves = CONFIG.volves;
-    this->words = CONFIG.words;
-    this->asSame = CONFIG.asSame;
-    this->alphabet = CONFIG.alphabet;
+// Оператор присваивания
+Conf& Conf::operator=(const Conf& other) {
+    if (this == &other) // Проверка на самоприсваивание
+        return *this;
+
+    modifications = other.modifications;
+    asOne = other.asOne;
+    consonants = other.consonants;
+    volves = other.volves;
+    words = other.words;
+    asSame = other.asSame;
+    alphabet = other.alphabet;
 
     return *this;
 }

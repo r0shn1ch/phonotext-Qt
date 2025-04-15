@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
     Phonotext pt(data.toStdString());
     Proccessing proc(pt, "rus", 0., 100.);
 
-    proc.createJson("res/data/outJson.json");
+    //proc.createJson("res/data/outJson.json");
     proc.print("res/data/out.txt");
 
     qint64 elapsed_ms = timer.elapsed();

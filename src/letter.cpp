@@ -47,7 +47,7 @@ QString Letter::getLetter()
     return outLetter;
 }
 
-QString Letter::getLetterRepr() const // Добавлен const
+QString Letter::getLetterRepr() const
 {
     QString outLetter = "";
     outLetter += origin;

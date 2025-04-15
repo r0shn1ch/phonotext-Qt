@@ -1,24 +1,24 @@
 #include "phonotext.h"
-
 Phonotext::Phonotext()
 {
 }
 
-Phonotext::Phonotext(std::string text)
+Phonotext::Phonotext(QString& text)
 {
-	if (text == "")
-		return;
+    if (text == "")
+        return;
 
-	// Генерация односвязного списка букв
-	basetext.emplace_front(Letter(" "));
+    // Генерация односвязного списка букв
+    basetext.emplace_front(Letter(" "));
 
-	std::forward_list<Letter>::iterator iter = basetext.begin();
-	for (int i = 0, l = 0; i < text.size(); i+=l)
-	{
-		for(l = 0; text[i] & (0x80 >> l); ++l); l = (l)?l:1; // find next letter
-        basetext.emplace_after(iter, Letter(QString::fromStdString(text.substr(i, l))));
-		++iter;
-	}
+    std::forward_list<Letter>::iterator iter = basetext.begin();
+    for (int i = 0, l = 0; i < text.size(); i++)
+    {
+        //for(l = 0; text[i].unicode() & (0x80 >> l); ++l); l = (l)?l:1; // find next letter
+        //qDebug() << text[i] << " " << l << "\n";
+        basetext.emplace_after(iter, Letter(text.at(i)));
+        ++iter;
+    }
 }
 
 Phonotext::~Phonotext()
@@ -43,42 +43,42 @@ std::pair<int, int> Phonotext::countLetters()
 	return count;
 }
 
-std::string Phonotext::getOrigin()
+QString Phonotext::getOrigin()
 {
-	std::string originText = "";
+    QString originText = "";
 
 	for (auto& symb : basetext)
-        originText += symb.origin.toStdString();
+        originText += symb.origin;
 
 	return originText;
 }
 
-std::string Phonotext::getTechnic()
+QString Phonotext::getTechnic()
 {
-	std::string technicText = "";
+    QString technicText = "";
 
 	for (auto& symb : basetext)
-        technicText += symb.technic.toStdString();
+        technicText += symb.technic;
 
 	return technicText;
 }
 
-std::string Phonotext::getPrintable()
+QString Phonotext::getPrintable()
 {
-	std::string printableText = "";
+    QString printableText = "";
 
 	for (auto& symb : basetext)
-        printableText += symb.printable.toStdString();
+        printableText += symb.printable;
 
 	return printableText;
 }
 
-std::string Phonotext::getPhonotextRepr()
+QString Phonotext::getPhonotextRepr()
 {
-	std::string reprText = "";
+    QString reprText = "";
 
 	for (auto& symb : basetext)
-        reprText += symb.getLetterRepr().toStdString();
+        reprText += symb.getLetterRepr();
 
 	return reprText;
 }

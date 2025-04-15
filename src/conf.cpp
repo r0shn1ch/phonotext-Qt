@@ -3,11 +3,10 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QDebug>
 
 Conf::Conf() {}
 
-Conf::Conf(const QString& lng)
+Conf::Conf(QString lng)
 {
     if (lng == "rus"){
         makeConfig("res/lng_conf/russian.json");

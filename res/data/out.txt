@@ -722,25 +722,11 @@ combinations:
 -----------
 repeats:
 key : вл
-Repeat.power : 0.128924
-Repeat.count : 2
-Repeat.letters : ливвол
+Repeat.power : 0
+Repeat.count : 1
+Repeat.letters : вол
 Repeat._words : <в><л>
-Repeat.combs : лив вол 
-
-key : вм
-Repeat.power : 0.578257
-Repeat.count : 4
-Repeat.letters : мовмиввеммов
-Repeat._words : <в><м>
-Repeat.combs : мов мив вем мов 
-
-key : вн
-Repeat.power : 8.08421
-Repeat.count : 8
-Repeat.letters : венфаннививнаневвенняв
-Repeat._words : <в><н>
-Repeat.combs : вен фан нив ивн вна нев вен няв 
+Repeat.combs : вол 
 
 key : вп
 Repeat.power : 0.165291
@@ -778,74 +764,25 @@ Repeat._words : <в><ц>
 Repeat.combs : фац 
 
 key : вч
-Repeat.power : 3.35295
-Repeat.count : 4
-Repeat.letters : ижвавашев
+Repeat.power : 0
+Repeat.count : 1
+Repeat.letters : ваш
 Repeat._words : <в><ч>
-Repeat.combs : ижв жва ваш шев 
+Repeat.combs : ваш 
 
-key : кл
+key : лв
+Repeat.power : 0
+Repeat.count : 1
+Repeat.letters : лив
+Repeat._words : <л><в>
+Repeat.combs : лив 
+
+key : лк
 Repeat.power : 0.085085
 Repeat.count : 2
 Repeat.letters : лихлох
-Repeat._words : <к><л>
+Repeat._words : <л><к>
 Repeat.combs : лих лох 
-
-key : км
-Repeat.power : 0.376072
-Repeat.count : 3
-Repeat.letters : мокмогмок
-Repeat._words : <к><м>
-Repeat.combs : мок мог мок 
-
-key : кн
-Repeat.power : 0
-Repeat.count : 1
-Repeat.letters : ног
-Repeat._words : <к><н>
-Repeat.combs : ног 
-
-key : кп
-Repeat.power : 2.54281
-Repeat.count : 6
-Repeat.letters : капкиббогпохгопбок
-Repeat._words : <к><п>
-Repeat.combs : кап киб бог пох гоп бок 
-
-key : кс
-Repeat.power : 9.15133
-Repeat.count : 10
-Repeat.letters : скаоскасисхакгососкы
-Repeat._words : <к><с>
-Repeat.combs : ска оск ска кас исх сха сак гос оск скы 
-
-key : кт
-Repeat.power : 3.69687
-Repeat.count : 7
-Repeat.letters : кадхаткидаггаттог
-Repeat._words : <к><т>
-Repeat.combs : кад хат атк тки даг гат тог 
-
-key : кч
-Repeat.power : 2.28187
-Repeat.count : 6
-Repeat.letters : кажикижхакщек
-Repeat._words : <к><ч>
-Repeat.combs : каж жик ижх жха жак щек 
-
-key : лм
-Repeat.power : 0.355059
-Repeat.count : 2
-Repeat.letters : лемлим
-Repeat._words : <л><м>
-Repeat.combs : лем лим 
-
-key : лн
-Repeat.power : 0.163032
-Repeat.count : 3
-Repeat.letters : ленннул
-Repeat._words : <л><н>
-Repeat.combs : лен лен нул 
 
 key : лп
 Repeat.power : 20.9661
@@ -882,6 +819,27 @@ Repeat.letters : лиж
 Repeat._words : <л><ч>
 Repeat.combs : лиж 
 
+key : мв
+Repeat.power : 0.578257
+Repeat.count : 4
+Repeat.letters : мовмиввеммов
+Repeat._words : <м><в>
+Repeat.combs : мов мив вем мов 
+
+key : мк
+Repeat.power : 0.376072
+Repeat.count : 3
+Repeat.letters : мокмогмок
+Repeat._words : <м><к>
+Repeat.combs : мок мог мок 
+
+key : мл
+Repeat.power : 0.355059
+Repeat.count : 2
+Repeat.letters : лемлим
+Repeat._words : <м><л>
+Repeat.combs : лем лим 
+
 key : мн
 Repeat.power : 9.60401
 Repeat.count : 6
@@ -916,6 +874,27 @@ Repeat.count : 4
 Repeat.letters : митимдот
 Repeat._words : <м><т>
 Repeat.combs : мит имд мдо мот 
+
+key : нв
+Repeat.power : 8.08421
+Repeat.count : 8
+Repeat.letters : венфаннививнаневвенняв
+Repeat._words : <н><в>
+Repeat.combs : вен фан нив ивн вна нев вен няв 
+
+key : нк
+Repeat.power : 0
+Repeat.count : 1
+Repeat.letters : ног
+Repeat._words : <н><к>
+Repeat.combs : ног 
+
+key : нл
+Repeat.power : 0.163032
+Repeat.count : 3
+Repeat.letters : ленннул
+Repeat._words : <н><л>
+Repeat.combs : лен лен нул 
 
 key : нп
 Repeat.power : 5.33527
@@ -959,33 +938,19 @@ Repeat.letters : нашчоннешне
 Repeat._words : <н><ч>
 Repeat.combs : наш чон неш ешн шне 
 
-key : пр
+key : пк
+Repeat.power : 2.54281
+Repeat.count : 6
+Repeat.letters : капкиббогпохгопбок
+Repeat._words : <п><к>
+Repeat.combs : кап киб бог пох гоп бок 
+
+key : рп
 Repeat.power : 10.4594
 Repeat.count : 3
 Repeat.letters : роппробор
-Repeat._words : <п><р>
+Repeat._words : <р><п>
 Repeat.combs : роп про бор 
-
-key : пс
-Repeat.power : 16.1325
-Repeat.count : 10
-Repeat.letters : сапсаиспсооспобос
-Repeat._words : <п><с>
-Repeat.combs : сап асп спа исп исп спо спо осп спо бос 
-
-key : пт
-Repeat.power : 5.53833
-Repeat.count : 8
-Repeat.letters : едбытибподебдаббудпод
-Repeat._words : <п><т>
-Repeat.combs : едб дбы тиб под деб даб буд под 
-
-key : пч
-Repeat.power : 0
-Repeat.count : 1
-Repeat.letters : пож
-Repeat._words : <п><ч>
-Repeat.combs : пож 
 
 key : рс
 Repeat.power : 7.4709
@@ -994,13 +959,6 @@ Repeat.letters : сяросс
 Repeat._words : <р><с>
 Repeat.combs : сяр рос рос 
 
-key : рт
-Repeat.power : 15.7609
-Repeat.count : 7
-Repeat.letters : даррятдартярродродтыр
-Repeat._words : <р><т>
-Repeat.combs : дар рят дар тяр род род тыр 
-
 key : рц
 Repeat.power : 0
 Repeat.count : 1
@@ -1008,19 +966,19 @@ Repeat.letters : рац
 Repeat._words : <р><ц>
 Repeat.combs : рац 
 
-key : рч
-Repeat.power : 0.217228
-Repeat.count : 2
-Repeat.letters : жаршер
-Repeat._words : <р><ч>
-Repeat.combs : жар шер 
+key : ск
+Repeat.power : 9.15133
+Repeat.count : 10
+Repeat.letters : скаоскасисхакгососкы
+Repeat._words : <с><к>
+Repeat.combs : ска оск ска кас исх сха сак гос оск скы 
 
-key : ст
-Repeat.power : 19.0224
-Repeat.count : 9
-Repeat.letters : сатитсядостаасдосод
-Repeat._words : <с><т>
-Repeat.combs : сат итс тся дос ост ста асд сдо сод 
+key : сп
+Repeat.power : 16.1325
+Repeat.count : 10
+Repeat.letters : сапсаиспсооспобос
+Repeat._words : <с><п>
+Repeat.combs : сап асп спа исп исп спо спо осп спо бос 
 
 key : сц
 Repeat.power : 0
@@ -1029,18 +987,74 @@ Repeat.letters : цуз
 Repeat._words : <с><ц>
 Repeat.combs : цуз 
 
-key : сч
+key : тк
+Repeat.power : 3.69687
+Repeat.count : 7
+Repeat.letters : кадхаткидаггаттог
+Repeat._words : <т><к>
+Repeat.combs : кад хат атк тки даг гат тог 
+
+key : тп
+Repeat.power : 5.53833
+Repeat.count : 8
+Repeat.letters : едбытибподебдаббудпод
+Repeat._words : <т><п>
+Repeat.combs : едб дбы тиб под деб даб буд под 
+
+key : тр
+Repeat.power : 15.7609
+Repeat.count : 7
+Repeat.letters : даррятдартярродродтыр
+Repeat._words : <т><р>
+Repeat.combs : дар рят дар тяр род род тыр 
+
+key : тс
+Repeat.power : 19.0224
+Repeat.count : 9
+Repeat.letters : сатитсядостаасдосод
+Repeat._words : <т><с>
+Repeat.combs : сат итс тся дос ост ста асд сдо сод 
+
+key : чв
+Repeat.power : 0.267142
+Repeat.count : 3
+Repeat.letters : ижвашев
+Repeat._words : <ч><в>
+Repeat.combs : ижв жва шев 
+
+key : чк
+Repeat.power : 2.28187
+Repeat.count : 6
+Repeat.letters : кажикижхакщек
+Repeat._words : <ч><к>
+Repeat.combs : каж жик ижх жха жак щек 
+
+key : чп
+Repeat.power : 0
+Repeat.count : 1
+Repeat.letters : пож
+Repeat._words : <ч><п>
+Repeat.combs : пож 
+
+key : чр
+Repeat.power : 0.217228
+Repeat.count : 2
+Repeat.letters : жаршер
+Repeat._words : <ч><р>
+Repeat.combs : жар шер 
+
+key : чс
 Repeat.power : 0.146437
 Repeat.count : 3
 Repeat.letters : сажижса
-Repeat._words : <с><ч>
+Repeat._words : <ч><с>
 Repeat.combs : саж ижс жса 
 
-key : тч
+key : чт
 Repeat.power : 5.21692
 Repeat.count : 5
 Repeat.letters : жаттэщточто
-Repeat._words : <т><ч>
+Repeat._words : <ч><т>
 Repeat.combs : жат тэщ точ очт что 
 
 

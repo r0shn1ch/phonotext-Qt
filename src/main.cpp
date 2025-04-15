@@ -2,7 +2,7 @@
 #include <QApplication>
 #include <QFile>
 #include <QTextStream>
-#include <QDebug>
+#include "logger.h"
 #include <QElapsedTimer>
 #include <QTextCodec>
 
@@ -25,7 +25,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    qDebug() << "start";
+    Log("start\n");
 
     QString data;
     QTextStream in(&file);
@@ -33,16 +33,18 @@ int main(int argc, char *argv[])
     data = in.readAll();
 
     file.close();
-    qDebug() << "Read End";
+    Log("Read End\n");
 
-    Phonotext pt(data.toStdString());
+    Phonotext pt(data);
     Proccessing proc(pt, "rus", 0., 100.);
 
-    //proc.createJson("res/data/outJson.json");
+    proc.createJson("res/data/outJson.json");
     proc.print("res/data/out.txt");
 
     qint64 elapsed_ms = timer.elapsed();
-    qDebug() << "The time:" << elapsed_ms << "ms";
+    Log("The time: ");
+    Log(elapsed_ms);
+    Log(" ms\n");
 
     QApplication a(argc, argv);
     QtMainWindow w;

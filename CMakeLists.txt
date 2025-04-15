@@ -26,7 +26,7 @@ set(PROJECT_SOURCES
         src/conf.cpp src/conf.h src/letter.cpp
         src/letter.h src/phonotext.cpp
         src/phonotext.h src/proccessing.cpp
-        src/proccessing.h
+        src/proccessing.h src/logger.cpp src/logger.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

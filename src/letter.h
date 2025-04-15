@@ -25,7 +25,7 @@ public:
     int w_pos;
 
     QString getLetter();
-    QString getLetterRepr() const; // Добавлен const
+    QString getLetterRepr() const;
 
     bool operator ==(const Letter& letter) const;
 };

@@ -1,12 +1,10 @@
 #pragma once
 
 #include <forward_list>
-#include <string>
 #include <vector>
-#include <set>
-#include <map>
+#include <QMap>
 
-#include <iostream>
+#include <QSet>
 
 #include "letter.h"
 
@@ -16,27 +14,27 @@ struct Repeat
 	double power;
 	std::vector<Letter> letters;
 	std::vector<std::vector<std::forward_list<Letter>::iterator>> combs;
-	std::set<std::string> _words;
+    QSet<QString> _words;
 };
 
 class Phonotext
 {
 public:
 	Phonotext();
-	Phonotext(std::string text);
+    Phonotext(QString& text);
 	~Phonotext();
 
 	std::forward_list<Letter> basetext;
 	std::vector<std::pair<std::forward_list<Letter>::iterator, std::forward_list<Letter>::iterator>> SP;
 	std::vector<std::vector<std::vector<std::forward_list<Letter>::iterator>>> syllableCombinations;
-	std::map<std::string, Repeat> repeats;
+    QMap<QString, Repeat> repeats;
 
 
 	std::pair<int, int> countLetters();
-	std::string getOrigin();
-	std::string getTechnic();
-	std::string getPrintable();
-	std::string getPhonotextRepr();
+    QString getOrigin();
+    QString getTechnic();
+    QString getPrintable();
+    QString getPhonotextRepr();
 	int length();
 };
 

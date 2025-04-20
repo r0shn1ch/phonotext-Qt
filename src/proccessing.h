@@ -1,20 +1,14 @@
 #pragma once
 
-#include <iostream>
 #include <vector>
 #include <forward_list>
-#include <set>
-#include <fstream>
-#include <algorithm>
 #include <chrono>
-#include <bitset>
-#include <list>
 
 #include "../include/nlohmann/json/json.hpp"
 #include "conf.h"
 #include "letter.h"
 #include "phonotext.h"
-
+#include <QString>
 using namespace nlohmann::literals;
 
 class Proccessing
@@ -23,7 +17,7 @@ public:
 	Proccessing(Phonotext pt, std::string lng, double min_pwr, double max_pwr);
 
 	Phonotext getResult() { return this->pt; }
-	void print(std::string);
+    void print(QString);
 	void createJson(std::string);
 
 private:

@@ -1,44 +1,41 @@
 ﻿#include "proccessing.h"
 #include <climits>
-
+#include <QDebug>
+#include <map>
+#include <iostream>
 Proccessing::Proccessing(Phonotext pt, std::string lng, double min_pwr, double max_pwr)
+    : pt(pt), CONFIG(lng), min_pwr(min_pwr), max_pwr(max_pwr)
 {
+    qDebug() << "proccess start";
+    qDebug() << "Add config";
+    qDebug() << "Config added";
 
-    std::cout << "proccess start\n";
-    this->pt = pt;
-    this->min_pwr = min_pwr;
-    this->max_pwr = max_pwr;
-
-    std::cout << "Add config\n";
-    Conf CONF(lng);
-    this->CONFIG = CONF;
-    std::cout << "Config added\n";
-
+    //timer.start();
     this->proccess();
+    //qDebug() << "Processing time:" << timer.elapsed() << "ms";
 }
 
 // Полная обработка текста
 void Proccessing::proccess()
 {
-    std::cout << "modify\n";
+    qDebug() << "modify";
     modifyProccessor(); // Замена
-    std::cout << "same\n";
+    qDebug() << "same";
     sameProccessor(); // Замена и запись
-    std::cout << "join\n";
+    qDebug() << "join";
     joinProccessor(); // Объединение
-    std::cout << "number\n";
+    qDebug() << "number";
     numberProccessor(); // Подсчёт
-    std::cout << "finder\n";
+    qDebug() << "finder";
     finderVolve(); // Поиск
-    std::cout << "SP\n";
+    qDebug() << "SP";
     SPmaxProccessor(); // Выборка
-    std::cout << "combinations\n";
+    qDebug() << "combinations";
     combinationsProccessor(); // Комбинирование
-    std::cout << "repeat\n";
+    qDebug() << "repeat";
     repeatProccessor(); // Подсчёт
-    std::cout << "proccessing end\n";
-    // clock_t end = clock();
-    // время нигде не используется
+    qDebug() << "repeat ended";
+    qDebug() << "proccessing end";
 }
 
 
@@ -46,57 +43,66 @@ void Proccessing::proccess()
 // Если изменять, то только напрямую с преподавателем
 void Proccessing::modifyProccessor()
 {
+
     std::string tmp_a;
     std::string tmp_b;
     std::string tmp_c;
-
-    auto itPreviosLetter = pt.basetext.begin();
-
+    auto it = pt.basetext.begin();
+    auto itPreviosLetter = pt.basetext.before_begin();
     bool needChange = false;
-    for (auto it = pt.basetext.begin(); it != pt.basetext.end(); it++)
+
+    while (it != pt.basetext.end())
     {
+
         if (needChange)
         {
-            // it->printable = "`";
             needChange = false;
         }
+
+
+        std::string origin = it->origin;
         if (it == pt.basetext.begin())
         {
-            tmp_b = it->origin;
+            tmp_b = origin;
         }
         else
         {
             tmp_a = tmp_b;
-            tmp_b = it->origin;
+            tmp_b = origin;
 
-            auto modFirstKey = CONFIG.getModifications()->find(tmp_a);
-            auto modFirstKeyEnd = CONFIG.getModifications()->end();
-            if (modFirstKey != modFirstKeyEnd)
-            {
-                int i, l;
-                auto modSecondKey = modFirstKey->second.find(tmp_b);
-                auto modSecondKeyEnd = modFirstKey->second.end();
-                if (modSecondKey != modSecondKeyEnd)
+            //QMap<QString, QMap<QString, QString>>* modifications = CONFIG.getModifications();
+            std::map<std::string, std::map<std::string, std::string>>* modifications = CONFIG.getModifications();
+            if (modifications) {
+                auto modFirstKey = CONFIG.getModifications()->find(tmp_a);
+                if (modFirstKey != modifications->end())
                 {
-                    tmp_c = modSecondKey->second;
-                    for (i = 0; tmp_c[0] & (0x80 >> i); ++i); i = (i) ? i : 1; // find first letter
-                    for (l = 0; tmp_c[i] & (0x80 >> l); ++l); l = (l) ? l : 1; // find second letter
 
-                    itPreviosLetter->origin = tmp_c.substr(0, i);
-                    it->origin = tmp_c.substr(i, l);
-                    pt.basetext.emplace_after(it, Letter(tmp_c.substr(i + l)));
-                    auto b = it;
-                    (++b)->printable = it->printable;
-                    it->printable = "`";
-                    needChange = true;
+                    auto modSecondKey = modFirstKey->second.find(tmp_b);
+                    if (modSecondKey != modFirstKey->second.end())
+                    {
+                        tmp_c = modSecondKey->second;
+                        int i,l;
+                        int firstCharLen = 1;
+                        if (!tmp_c.empty()) {
+                            //firstCharLen = tmp_c.at(0).unicode() > 127 ? (tmp_c.at(0).unicode() > 2047 ? (tmp_c.at(0).unicode() > 65535 ? 4 : 3) : 2) : 1;
+                            for (i = 0; tmp_c[0] & (0x80 >> i); ++i); i = (i) ? i : 1; // find first letter
+                            for (l = 0; tmp_c[i] & (0x80 >> l); ++l); l = (l) ? l : 1; // find second letter
+                        }
+                        itPreviosLetter->origin = tmp_c.substr(0, i);
+                        it->origin = tmp_c.substr(i, l);
+                        pt.basetext.emplace_after(it, Letter((tmp_c.substr(i + l))));
+                        auto b = it;
+                        (++b)->printable = it->printable;
+                        it->printable = "`";
+                        needChange = true;
+                    }
                 }
-
             }
         }
         itPreviosLetter = it;
+        ++it;
     }
 }
-
 
 // Запись technic и printable, а так же замена символов в первом, если они являются одинаковыми по json
 // P.S. стоит вопрос по переписи
@@ -104,7 +110,7 @@ void Proccessing::sameProccessor()
 {
     for (auto& symb : pt.basetext)
     {
-        std::map<std::string, std::string> asSame = CONFIG.getAsSame();
+        auto asSame = CONFIG.getAsSame();
         auto sameKey = asSame.find(symb.printable);
         auto sameKeyEnd = asSame.end();
         if (sameKey != sameKeyEnd)
@@ -124,8 +130,7 @@ void Proccessing::sameProccessor()
 }
 
 // Объединение объектов, если они являются одним символом
-void Proccessing::joinProccessor()
-{
+void Proccessing::joinProccessor(){
     std::string tmp_a; // Первый символ совмещающейся в комбинации
     std::string tmp_b; // Второй символ совмещающейся в комбинации
 
@@ -146,7 +151,7 @@ void Proccessing::joinProccessor()
             tmp_a = itPreviosLetter->origin; // Запись первого символа (origin из предыдущего итератора)
             tmp_b = it->origin; // Запись второго символа (origin из настоящего символа)
 
-            std::map<char, std::string> asOne = CONFIG.getAsOne();
+            auto asOne = CONFIG.getAsOne();
             auto oneKey = asOne.find(tmp_a[0]); // Поиск комбинации по первому символу
             auto oneKeyEnd = asOne.end();
             if (oneKey != oneKeyEnd) // Если комбинация найдена
@@ -224,7 +229,7 @@ void Proccessing::numberProccessor()
         }
         else
         {
-            std::vector<std::string> words = CONFIG.getWords();
+            auto words = CONFIG.getWords();
             space_pos++;
             // Для чего всё делается дальше не совсем помню, но по-факту это ничего не делает
             bool flag = false;
@@ -256,7 +261,7 @@ void Proccessing::numberProccessor()
             // конец строки на каждой строке в последнем слове
         }
         // Определение гласных объектов
-        std::vector<std::string> volves = CONFIG.getVolves();
+        auto volves = CONFIG.getVolves();
         for (int t = 0; t < volves.size(); t++)
             if (it->printable == volves[t])
             {
@@ -265,7 +270,7 @@ void Proccessing::numberProccessor()
                 break;
             }
         // Определение согласных объектов
-        std::vector<std::string> consonants = CONFIG.getConsonants();
+        auto consonants = CONFIG.getConsonants();
         for (int t = 0; t < consonants.size(); t++)
             if (it->printable == consonants[t])
             {
@@ -537,22 +542,31 @@ void Proccessing::repeatProccessor()
 {
     for (int n_syll = 0; n_syll < pt.syllableCombinations.size(); n_syll++)
     {
+
         for (auto& comb : pt.syllableCombinations[n_syll])
         {
             std::vector<std::string> a;
-
             // Создание структуры Repeat, в которой распологаются комбинации и инфа о них (комбинации состоят из СС: согласная + согласная)
-            for (auto& i : comb)
+            for (auto& i : comb){
                 if (i->isConsonant)
                     a.push_back(i->technic);
-
+            }
+            //QVector<std::forward_list<Letter>::iterator> cppCombToQt(comb.size());
+            // int index = 0;
+            // for (auto &i : comb)
+            // {
+            //     cppCombToQt[index] = i;
+            //     ++index;
+            // }
             // Удаление повторяющихся символов
             std::set<std::string> tmpWords(a.begin(), a.end());
             std::string setToStr = "";
             for (auto& i : tmpWords)
                 setToStr += i;
 
+
             // Отбрасывание невалидных комбинаций
+            //std::pair<bool, double> filter = rusFilterComb(cppCombToQt, CONFIG.getWords());
             std::pair<bool, double> filter = rusFilterComb(comb, CONFIG.getWords());
             if (filter.first)
             {
@@ -665,95 +679,98 @@ std::pair<bool, double> Proccessing::rusFilterComb(std::vector<std::forward_list
 }
 
 // Вывод
-void Proccessing::print(std::string filename)
+#include <QFile>
+void Proccessing::print(QString filename)
 {
-    std::ofstream fout;
-    fout.open(filename);
-    fout << "===========\n";
+    QFile out(filename);
+    if(!out.open(QIODevice::ReadWrite | QIODevice::Text))
+        return;
+    QTextStream stream (&out);
+    stream << "===========\n";
 
-    fout << "-----------\n";
-    fout << "origin      : ";
+    stream << "-----------\n";
+    stream << "origin      : ";
     for (auto& i : pt.basetext)
     {
-        fout << i.origin;
+        stream << QString::fromStdString(i.origin);
     }
-    fout << std::endl;
+    stream << Qt::endl;
 
-    fout << "-----------\n";
-    fout << "technic     : ";
+    stream << "-----------\n";
+    stream << "technic     : ";
     for (auto& i : pt.basetext)
     {
-        fout << i.technic;
+        stream << QString::fromStdString(i.technic);
     }
-    fout << std::endl;
+    stream << Qt::endl;
 
-    fout << "-----------\n";
-    fout << "printable   : ";
+    stream << "-----------\n";
+    stream << "printable   : ";
     for (auto& i : pt.basetext)
     {
-        fout << i.printable;
+        stream << QString::fromStdString(i.printable);
     }
-    fout << std::endl;
+    stream << Qt::endl;
 
-    fout << "-----------\n";
-    fout << "isWord      : ";
+    stream << "-----------\n";
+    stream << "isWord      : ";
     for (auto& i : pt.basetext)
     {
         if (i.isVolve)
-            fout << "v";
+            stream << "v";
         else if (i.isConsonant)
-            fout << "c";
+            stream << "c";
         else
-            fout << "n";
+            stream << "n";
     }
-    fout << std::endl;
+    stream << Qt::endl;
 
-    fout << "-----------\n";
-    fout << "w_pos      : ";
+    stream << "-----------\n";
+    stream << "w_pos      : ";
     for (auto& i : pt.basetext)
     {
-        fout << i.w_pos;
+        stream << i.w_pos;
     }
-    fout << std::endl;
+    stream << Qt::endl;
 
-    fout << "-----------\n";
-    fout << "SP          :\n";
+    stream << "-----------\n";
+    stream << "SP          :\n";
     for (int i = 0; i < pt.SP.size(); i++)
     {
-        fout << i << ": \"";
+        stream << i << ": \"";
         for (auto it = pt.SP[i].first; it != pt.SP[i].second; it++)
         {
-            fout << it->technic;
+            stream << QString::fromStdString(it->technic);
         }
-        fout << "\"" << std::endl;
+        stream << "\"" << Qt::endl;
     }
-    fout << std::endl;
+    stream << Qt::endl;
     for (auto& i : pt.basetext)
     {
-        fout << i.origin << i.technic << i.printable << i.isVolve << i.isConsonant << i.number << '|';
+        stream << QString::fromStdString(i.origin) << QString::fromStdString(i.technic) << QString::fromStdString(i.printable) << i.isVolve << i.isConsonant << i.number << '|';
     }
 
-    fout << "-----------\n";
+    stream << "-----------\n";
 
-    fout << "combinations:\n";
+    stream << "combinations:\n";
     for (int i = 0; i < pt.syllableCombinations.size(); i++)
     {
-        fout << i << ":\n";
+        stream << i << ":\n";
         for (int j = 0; j < pt.syllableCombinations[i].size(); j++)
         {
             for (int k = 0; k < 3; k++)
-                fout << pt.syllableCombinations[i][j][k]->origin;
-            fout << std::endl;
+                stream << QString::fromStdString(pt.syllableCombinations[i][j][k]->origin);
+            stream << Qt::endl;
         }
-        fout << std::endl;
+        stream << Qt::endl;
     }
-    fout << std::endl;
+    stream << Qt::endl;
 
     std::string printable = "";
     for (auto it = pt.basetext.begin(); it != pt.basetext.end(); it++)
         printable += it->printable;
-    fout << "-----------\n";
-    fout << "repeats:\n";
+    stream << "-----------\n";
+    stream << "repeats:\n";
     for (auto& i : pt.repeats)
     {
         std::string letters = "";
@@ -768,28 +785,28 @@ void Proccessing::print(std::string filename)
         }
         std::vector<std::string> combs;
 
-        fout << "key : " << i.first << std::endl;
-        fout << "Repeat.power : " << i.second.power << std::endl;
-        fout << "Repeat.count : " << i.second.count << std::endl;
-        fout << "Repeat.letters : " << letters << std::endl;
-        fout << "Repeat._words : " << swords << std::endl;
-        fout << "Repeat.combs : ";
+        stream << "key : " << QString::fromStdString(i.first) << Qt::endl;
+        stream << "Repeat.power : " << i.second.power << Qt::endl;
+        stream << "Repeat.count : " << i.second.count << Qt::endl;
+        stream << "Repeat.letters : " << QString::fromStdString(letters) << Qt::endl;
+        stream << "Repeat._words : " << QString::fromStdString(swords) << Qt::endl;
+        stream << "Repeat.combs : ";
         for (int j = 0; j < i.second.combs.size(); j++)
         {
             std::string tmpComb = "";
             for (int k = 0; k < i.second.combs[j].size(); k++)
             {
-                fout << i.second.combs[j][k]->origin;
+                stream << QString::fromStdString(i.second.combs[j][k]->origin);
                 tmpComb+= i.second.combs[j][k]->origin;
             }
             combs.push_back(tmpComb);
-            fout << " ";
+            stream << " ";
         }
-        fout << std::endl << std::endl;
+        stream << Qt::endl << Qt::endl;
     }
-    fout << std::endl;
-    fout << "-----------\n";
-    fout.close();
+    stream << Qt::endl;
+    stream << "-----------\n";
+    out.close();
 }
 
 void Proccessing::createJson(std::string filename)
@@ -898,17 +915,18 @@ double Proccessing::get_pwr (const std::forward_list<Letter>::iterator &a, const
 }
 double Proccessing::get_pwr_combs (const std::vector<std::forward_list<Letter>::iterator>& combA, const std::vector<std::forward_list<Letter>::iterator>& combB)
 {
+
     double pwr = 0;
-    /*  debug output
-        std::cout<<"\ncomb A: \n";
-        for (auto &i: combA){
-            std::cout<<i->origin;
-        }
-        std::cout<<"\ncomb B: \n";
-        for (auto &j: combB){
-            std::cout<<j->origin;
-        }
-    */
+
+    // std::cout<<"\ncomb A: \n";
+    // for (auto &i: combA){
+    //     std::cout<<i->origin;
+    // }
+    // std::cout<<"\ncomb B: \n";
+    // for (auto &j: combB){
+    //     std::cout<<j->origin;
+    // }
+
     for (int i = 0; i < combA.size(); ++i){
         for (int j = 0; j < combB.size(); ++j){
             pwr += get_pwr(combA[i], combB[j]);
@@ -937,26 +955,23 @@ double Proccessing::get_pwr_combs (const std::vector<std::forward_list<Letter>::
     //power у комбинаций - что это? формулы из плюсового кода?
     //использовал rusFilterComb, чтобы не писать еще одну функцию для поиска силы комбинации
     pwr *= 1. / (mul_1 + 1) + 1. / (mul_2 + 1);
-
-    // debug output
-    // std::cout << "\npwr " << pwr << " mul " << mul << " mul_1 " << mul_1 << " mul_2 " << mul_2 << " ";
-
     return pwr * mul; //вовзрат павер для 2 комбинаций
 }
 double Proccessing::handlePower(std::map<std::string, Repeat>& repeats)
 {
+
     //цикл - если позиция в тексте первого символа в текущей комбинации
     //больше позиции в тексте последнего символа из предыдущей комбинации
     //то мы увеличиваем число параметра кол-ва комбинаций для данного повторения
-    /*for (auto& data : repeats) {
-        data.second.count = 1;
-        auto last = data.second.combs[0];
-        for (auto& y : data.second.combs){
-            if (y[0]->number - last[last.size()-1]->number > 0)
-                data.second.count += 1;
-            last = y;
-        }
-    }*/
+    // for (auto& data : repeats) {
+    //     data.second.count = 1;
+    //     auto last = data.second.combs[0];
+    //     for (auto& y : data.second.combs){
+    //         if (y[0]->number - last[last.size()-1]->number > 0)
+    //             data.second.count += 1;
+    //         last = y;
+    //     }
+    // }
     //но это неверно - в комбинациях этого может и не происходить
     //и расчет repeat.count происходит неверно
 
@@ -970,19 +985,31 @@ double Proccessing::handlePower(std::map<std::string, Repeat>& repeats)
         //здесь длина комбинаций это их количество в повторении
         //обходим все комбинации, в комбинациях обходим все символы
         //обходим все кобинации одного повторения каждая с каждой
+
         for (int i = 0; i < rep.second.combs.size(); ++i) {
             for (int j = i + 1; j < rep.second.combs.size(); ++j) {
+                // QVector<std::forward_list<Letter>::iterator> cppComb1ToQt(rep.second.combs[i].size());
+                // int index1 = 0;
+                // for (auto &comb : rep.second.combs[i])
+                // {
+                //     cppComb1ToQt[index1] = comb;
+                //     ++index1;
+                // }
+                // QVector<std::forward_list<Letter>::iterator> cppComb2ToQt(rep.second.combs[j].size());
+                // int index2 = 0;
+                // for (auto &comb : rep.second.combs[j])
+                // {
+                //     cppComb2ToQt[index2] = comb;
+                //     ++index2;
+                // }
+                //pwr += get_pwr_combs(cppComb1ToQt, cppComb2ToQt);
                 pwr += get_pwr_combs(rep.second.combs[i], rep.second.combs[j]);
                 //рассчет силы по формуле выше
-                //std::cout << i << " " << j << " " <<
-                    //get_pwr_combs(rep.second.combs[i], rep.second.combs[j]) << std::endl ;
                 if (rep.second.combs[j][0]->number - rep.second.combs[i][0]->number > 50)
                     break;
                 //если разница в позициях у первых символов в комбинациях больше 50, то прервать
             }
         }
-        // debug output
-        // std::cout << "\n::" << rep.first << " " << pwr << "\n";
         rep.second.power = pwr;
         repeats_power += pwr;
     }
